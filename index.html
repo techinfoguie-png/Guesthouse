@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Гостевой Дом</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .room-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div>
+                <h1 id="site-title" class="text-2xl font-bold text-gray-800">🏠 Гостевой Дом</h1>
+                <p id="site-desc" class="text-sm text-gray-500 mt-1">Загрузка...</p>
+            </div>
+            <div class="text-right">
+                <a id="phone-link" href="tel:" class="text-blue-600 font-semibold hover:text-blue-800 transition"></a>
+                <p id="address" class="text-xs text-gray-400 mt-1"></p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8">
+        
+        <section class="bg-white rounded-2xl shadow-lg p-6 mb-8 fade-in">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">🔍 Проверить доступность</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Заезд</label>
+                    <input type="date" id="check-in" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Выезд</label>
+                    <input type="date" id="check-out" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Гостей</label>
+                    <select id="guests" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none">
+                        <option value="1">1 гость</option>
+                        <option value="2">2 гостя</option>
+                        <option value="3">3 гостя</option>
+                        <option value="4">4 гостя</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button onclick="checkAvailability()" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition font-medium">Показать номера</button>
+                </div>
+            </div>
+            <div id="date-info" class="mt-3 text-sm text-gray-500"></div>
+        </section>
+
+        <section>
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Наши номера</h2>
+            <div id="rooms-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="flex justify-center py-12"><div class="loader"></div></div>
+            </div>
+        </section>
+
+        <div id="booking-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6 fade-in">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Бронирование</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                </div>
+                <div id="modal-content">
+                    <p class="text-gray-600 mb-4">Номер: <span id="modal-room-name" class="font-semibold"></span></p>
+                    <p class="text-gray-600 mb-4">Период: <span id="modal-dates"></span></p>
+                    <p class="text-gray-600 mb-4">Стоимость: <span id="modal-price" class="font-semibold text-blue-600"></span></p>
+                    
+                    <form id="booking-form" onsubmit="submitBooking(event)">
+                        <input type="hidden" id="modal-room-id">
+                        <input type="hidden" id="modal-check-in">
+                        <input type="hidden" id="modal-check-out">
+                        
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ваше имя *</label>
+                            <input type="text" id="guest-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Телефон *</label>
+                            <input type="tel" id="guest-phone" required placeholder="+7 (999) 123-45-67" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="guest-email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        
+                        <div id="booking-status" class="mb-3 hidden"></div>
+                        
+                        <button type="submit" id="submit-btn" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-medium">Отправить заявку</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p id="footer-text" class="text-gray-400"></p>
+            <p class="text-gray-500 text-sm mt-2">Работает на Google Sheets CMS ⚡</p>
+        </div>
+    </footer>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════
+        // ЗАМЕНИТЕ ЭТОТ URL НА ВАШ ИЗ GOOGLE APPS SCRIPT
+        // ═══════════════════════════════════════════════════════════════════
+        const API_URL = 'ВАШ_SCRIPT_URL';
+        // Пример: const API_URL = 'https://script.google.com/macros/s/AKfycbx.../exec';
+        // ═══════════════════════════════════════════════════════════════════
+        
+        let settings = {};
+        let rooms = [];
+        let selectedDates = { checkIn: null, checkOut: null };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initDates();
+            loadData();
+        });
+
+        function initDates() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const formatDate = (d) => d.toISOString().split('T')[0];
+            
+            document.getElementById('check-in').value = formatDate(today);
+            document.getElementById('check-out').value = formatDate(tomorrow);
+            document.getElementById('check-in').min = formatDate(today);
+            document.getElementById('check-out').min = formatDate(tomorrow);
+            updateDateInfo();
+        }
+
+        document.getElementById('check-in').addEventListener('change', updateDateInfo);
+        document.getElementById('check-out').addEventListener('change', updateDateInfo);
+
+        function updateDateInfo() {
+            const cin = document.getElementById('check-in').value;
+            const cout = document.getElementById('check-out').value;
+            if(cin && cout) {
+                const nights = Math.ceil((new Date(cout) - new Date(cin)) / (1000 * 60 * 60 * 24));
+                document.getElementById('date-info').textContent = nights > 0 ? `🌙 ${nights} ночей` : '❌ Дата выезда должна быть позже даты заезда';
+            }
+        }
+
+        async function loadData() {
+            try {
+                const settingsRes = await fetch(`${API_URL}?action=settings`);
+                settings = await settingsRes.json();
+                
+                document.getElementById('site-title').textContent = settings.site_title || '🏠 Гостевой Дом';
+                document.getElementById('site-desc').textContent = settings.site_desc || '';
+                document.getElementById('phone-link').textContent = settings.phone || '';
+                document.getElementById('phone-link').href = `tel:${settings.phone || ''}`;
+                document.getElementById('address').textContent = settings.address || '';
+                document.getElementById('footer-text').textContent = `${settings.site_title || 'Гостевой Дом'} — ${settings.address || ''}`;
+                
+                const roomsRes = await fetch(`${API_URL}?action=rooms`);
+                rooms = await roomsRes.json();
+                renderRooms(rooms);
+                
+            } catch(err) {
+                console.error('Ошибка загрузки:', err);
+                document.getElementById('rooms-container').innerHTML = `
+                    <div class="col-span-full text-center py-12 text-red-500">
+                        ⚠️ Ошибка загрузки данных. Проверьте подключение к API.
+                    </div>`;
+            }
+        }
+
+        function renderRooms(roomsToRender, showBooking = false) {
+            const container = document.getElementById('rooms-container');
+            if(roomsToRender.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500">Нет доступных номеров на выбранные даты</div>';
+                return;
+            }
+            
+            container.innerHTML = roomsToRender.map(room => `
+                <div class="room-card bg-white rounded-2xl shadow-md overflow-hidden transition-all duration-300 fade-in ${room.status !== 'active' ? 'opacity-50' : ''}">
+                    <div class="h-48 bg-gray-200 relative overflow-hidden">
+                        ${room.photo_url ? 
+                            `<img src="${room.photo_url}" alt="${room.name}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-gray-400\\'>📷 Нет фото</div>'">` :
+                            '<div class="flex items-center justify-center h-full text-gray-400">📷 Нет фото</div>'
+                        }
+                        <div class="absolute top-3 right-3 bg-white px-3 py-1 rounded-full text-sm font-semibold shadow">
+                            ${room.price}${settings.currency || '₽'}/ночь
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-lg font-semibold text-gray-800">${room.name}</h3>
+                            <span class="text-sm text-gray-500">👥 до ${room.capacity} чел.</span>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-4 line-clamp-3">${room.description || 'Комфортный номер для приятного отдыха.'}</p>
+                        ${showBooking && room.status === 'active' ? `
+                            <button onclick="openBookingModal('${room.id}', '${room.name}', ${room.price})" 
+                                    class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium">
+                                Забронировать
+                            </button>
+                        ` : room.status !== 'active' ? `
+                            <button disabled class="w-full bg-gray-300 text-gray-500 py-2 rounded-lg cursor-not-allowed">
+                                Недоступен
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function checkAvailability() {
+            const cin = document.getElementById('check-in').value;
+            const cout = document.getElementById('check-out').value;
+            
+            if(!cin || !cout || new Date(cout) <= new Date(cin)) {
+                alert('Пожалуйста, выберите корректные даты');
+                return;
+            }
+            
+            selectedDates = { checkIn: cin, checkOut: cout };
+            document.getElementById('rooms-container').innerHTML = '<div class="flex justify-center py-12"><div class="loader"></div></div>';
+            
+            try {
+                const availableRooms = [];
+                for(const room of rooms) {
+                    if(room.status !== 'active') continue;
+                    const res = await fetch(`${API_URL}?action=availability&room_id=${room.id}&start=${cin}&end=${cout}`);
+                    const data = await res.json();
+                    const occupiedInRange = data.occupied_dates.filter(d => d >= cin && d < cout);
+                    if(occupiedInRange.length === 0) availableRooms.push(room);
+                }
+                renderRooms(availableRooms, true);
+            } catch(err) {
+                console.error(err);
+                renderRooms(rooms, true);
+            }
+        }
+
+        function openBookingModal(roomId, roomName, price) {
+            const cin = document.getElementById('check-in').value;
+            const cout = document.getElementById('check-out').value;
+            const nights = Math.ceil((new Date(cout) - new Date(cin)) / (1000 * 60 * 60 * 24));
+            
+            document.getElementById('modal-room-id').value = roomId;
+            document.getElementById('modal-room-name').textContent = roomName;
+            document.getElementById('modal-dates').textContent = `${cin} — ${cout} (${nights} ночей)`;
+            document.getElementById('modal-price').textContent = `${price * nights}${settings.currency || '₽'}`;
+            document.getElementById('modal-check-in').value = cin;
+            document.getElementById('modal-check-out').value = cout;
+            
+            document.getElementById('booking-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('booking-modal').classList.add('hidden');
+            document.getElementById('booking-form').reset();
+            document.getElementById('booking-status').classList.add('hidden');
+        }
+
+        async function submitBooking(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            const status = document.getElementById('booking-status');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loader mx-auto" style="width:20px;height:20px;border-width:2px;"></div>';
+            
+            const data = {
+                action: 'book',
+                room_id: document.getElementById('modal-room-id').value,
+                name: document.getElementById('guest-name').value,
+                phone: document.getElementById('guest-phone').value,
+                email: document.getElementById('guest-email').value,
+                check_in: document.getElementById('modal-check-in').value,
+                check_out: document.getElementById('modal-check-out').value,
+                guests: document.getElementById('guests').value
+            };
+            
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await res.json();
+                status.classList.remove('hidden');
+                
+                if(result.success) {
+                    status.innerHTML = `<div class="bg-green-100 text-green-700 px-4 py-3 rounded-lg">✅ Бронирование #${result.booking_id} создано! Мы свяжемся с вами для подтверждения.</div>`;
+                    setTimeout(() => { closeModal(); checkAvailability(); }, 3000);
+                } else {
+                    status.innerHTML = `<div class="bg-red-100 text-red-700 px-4 py-3 rounded-lg">❌ ${result.error || 'Ошибка бронирования'}</div>`;
+                }
+            } catch(err) {
+                status.classList.remove('hidden');
+                status.innerHTML = `<div class="bg-red-100 text-red-700 px-4 py-3 rounded-lg">❌ Ошибка сети. Попробуйте позже.</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Отправить заявку';
+            }
+        }
+
+        document.getElementById('booking-modal').addEventListener('click', (e) => {
+            if(e.target === document.getElementById('booking-modal')) closeModal();
+        });
+    </script>
+</body>
+</html>
