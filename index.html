@@ -345,7 +345,7 @@
 
         function startGallery(roomIndex) {
             const room = rooms[roomIndex];
-            if(!room  !room.photos  room.photos.length <= 1) return;
+            if(!room || !room.photos || room.photos.length <= 1) return;
             galleryIntervals[roomIndex] = setInterval(function() {
                 nextPhoto(roomIndex);
             }, 2000);
