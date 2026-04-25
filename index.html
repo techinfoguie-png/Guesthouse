@@ -395,7 +395,7 @@
             const cin = document.getElementById('check-in').value;
             const cout = document.getElementById('check-out').value;
             
-            if(!cin  !cout  new Date(cout) <= new Date(cin)) {
+            if(!cin || !cout || new Date(cout) <= new Date(cin)) {
                 alert('Пожалуйста, выберите корректные даты');
                 return;
             }
