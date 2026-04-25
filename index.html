@@ -14,16 +14,14 @@
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* Слайдер дома */
         .hero-slider { position: relative; height: 400px; overflow: hidden; border-radius: 1rem; }
         .hero-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1s ease-in-out; background-size: cover; background-position: center; }
         .hero-slide.active { opacity: 1; }
         .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.2)); }
-        .hero-dots { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
+        .hero-dots { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 20; }
         .hero-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.3s; }
         .hero-dot.active { background: white; width: 30px; border-radius: 5px; }
         
-        /* Галерея номера */
         .room-gallery { position: relative; height: 220px; overflow: hidden; }
         .room-gallery img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.5s ease; }
         .room-gallery img.active { opacity: 1; }
@@ -53,10 +51,8 @@
             </div>
         </div>
     </header>
-
     <main class="max-w-6xl mx-auto px-4 py-8">
         
-        <!-- Слайдер дома (динамический из таблицы) -->
         <section class="mb-8 fade-in">
             <div id="hero-slider" class="hero-slider shadow-xl">
                 <div class="flex items-center justify-center h-full bg-gray-200 text-gray-400">
