@@ -269,7 +269,7 @@
                 document.getElementById('address-map').textContent = settings.address || '';
                 document.getElementById('phone-map').textContent = settings.phone || '';
                 document.getElementById('email-map').textContent = settings.email || '';
-                document.getElementById('footer-text').textContent = (settings.site_title  'Гостевой Дом') + ' — ' + (settings.address  '');
+                document.getElementById('footer-text').textContent = (settings.site_title ||'Гостевой Дом') + ' — ' + (settings.address || '');
                 
                 initHeroSlider();
                 renderRooms(rooms);
