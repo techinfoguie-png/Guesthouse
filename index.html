@@ -266,8 +266,6 @@
                 document.getElementById('site-desc').textContent = settings.site_desc || '';
                 document.getElementById('phone-link').textContent = settings.phone || '';
                 document.getElementById('phone-link').href = 'tel:' + (settings.phone || '');
-                document.getElementById('phone-link-2').textContent = settings.phone_2 || '';
-                document.getElementById('phone-link-2').href = 'tel:' + (settings.phone_2 || '');
                 document.getElementById('phone-link-map').href = 'tel:' + (settings.phone || '');
                 document.getElementById('address').textContent = settings.address || '';
                 document.getElementById('address-map').textContent = settings.address || '';
@@ -322,7 +320,7 @@
                     html += '</div>';
                 }
                 
-                html += '<div class="absolute top-3 right-3 bg-white px-3 py-1 rounded-full text-sm font-semibold shadow z-10">' + room.price + (settings.currency || '₽') + '/ночь</div>';
+                html += '<div class="absolute top-3 right-3 bg-white px-3 py-1 rounded-full text-sm font-semibold shadow z-10">' + room.price + (settings.currency || '₽') + '/сутки</div>';
                 html += '</div>';
                 
                 // Info
