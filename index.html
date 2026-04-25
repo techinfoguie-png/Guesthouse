@@ -105,6 +105,29 @@
 
     </main>
 
+
+    <!-- Яндекс.Карта -->
+    <section class="bg-white rounded-2xl shadow-lg p-6 mb-8 fade-in">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800">🗺️ Как нас найти</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <p class="text-gray-600 mb-2">Мы находимся в самом сердце Сочи. До центра — 15 минут, до моря — 7 минут ходьбы.</p>
+                <p class="text-gray-600 mb-2"><strong>Адрес:</strong> <span id="address-map"></span></p>
+                <p class="text-gray-600"><strong>Телефон:</strong> <span id="phone-map"></span></p>
+                <p class="text-gray-600"><strong>Email:</strong> <span id="email-map"></span></p>
+                <div class="mt-4">
+                    <a href="tel:" id="phone-link-map" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        📞 Позвонить
+                   a>
+                </div>
+            </div>
+            <div class="rounded-xl overflow-hidden shadow-inner border border-gray-200" style="height: 400px;">
+                <!-- Яндекс.Карта iframe -->
+                <iframe src="https://yandex.ru/map-widget/v1/-/CPGfMJkJ" width="100%" height="100%" frameborder="0" allowfullscreen="true" style="border:0;"></iframe>
+            </div>
+        </div>
+    </section>
+  
     <footer class="bg-gray-800 text-white py-8 mt-12">
         <div class="max-w-6xl mx-auto px-4 text-center">
             <p id="footer-text" class="text-gray-400"></p>
