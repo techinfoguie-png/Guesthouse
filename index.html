@@ -283,17 +283,24 @@
                 
                 // Телефон 2 (показываем только если есть в таблице)
                 const phone2 = settings.phone_2 || '';
-                if (phone2) {
-                    document.getElementById('phone-link-2').textContent = phone2;
-                    document.getElementById('phone-link-2').href = 'tel:' + phone2;
-                    document.getElementById('phone-link-2').style.display = 'inline';
-                    
-                    document.getElementById('phone-2-map').textContent = phone2;
-                    document.getElementById('phone-2-link-map').href = 'tel:' + phone2;
-                    document.getElementById('phone-2-container').style.display = 'block';
-                    document.getElementById('phone-2-link-map').style.display = 'inline-flex';
-                }
+                const phone2MapEl = document.getElementById('phone-2-map');
+                const phone2ContainerEl = document.getElementById('phone-2-container');
+                const phone2LinkMapEl = document.getElementById('phone-2-link-map');
+                const phoneLink2El = document.getElementById('phone-link-2');
                 
+                if (phone2 && phone2MapEl) {
+                    phone2MapEl.textContent = phone2;
+                    if (phone2ContainerEl) phone2ContainerEl.style.display = 'block';
+                    if (phone2LinkMapEl) {
+                        phone2LinkMapEl.href = 'tel:' + phone2;
+                        phone2LinkMapEl.style.display = 'inline-flex';
+                    }
+                    if (phoneLink2El) {
+                        phoneLink2El.textContent = phone2;
+                        phoneLink2El.href = 'tel:' + phone2;
+                        phoneLink2El.style.display = 'inline';
+                    }
+                }
                 // Адрес
                 const address = settings.address || '';
                 document.getElementById('address').textContent = address;
