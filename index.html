@@ -121,19 +121,13 @@
         </section>
         
    
-        <div id="booking-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl max-w-md w-full p-6 fade-in">
+       <div id="booking-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 fade-in">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold">Бронирование</h3>
                     <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
                 </div>
-                <div id="booking-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl max-w-md w-full p-6 fade-in">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold">Бронирование</h3>
-                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
-                </div>
-                <div id="modal-content">
+                <div>
                     <p class="text-gray-600 mb-4">Номер: <span id="modal-room-name" class="font-semibold"></span></p>
                     <p class="text-gray-600 mb-4">Период: <span id="modal-dates"></span></p>
                     <p class="text-gray-600 mb-4">Стоимость: <span id="modal-price" class="font-semibold text-blue-600"></span></p>
@@ -173,19 +167,18 @@
         </div>
     </footer>
 
+
+
     <script>
-        // ═══════════════════════════════════════════════════════════════════
-        // ЗАМЕНИТЕ ЭТОТ URL НА ВАШ ИЗ GOOGLE APPS SCRIPT
-        // ═══════════════════════════════════════════════════════════════════
         const API_URL = 'https://script.google.com/macros/s/AKfycbynKHpCuTZXIiVd-NQzfc_GSa8N899fSdelP__2mH8RXJOk-xOKY5aUEpPvtjevM_qR/exec';
-        // Пример: const API_URL = 'https://script.google.com/macros/s/AKfycbx.../exec';
-        // ═══════════════════════════════════════════════════════════════════
         
         let settings = {};
         let rooms = [];
+        let slides = [];
         let selectedDates = { checkIn: null, checkOut: null };
+        let heroInterval;
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             initDates();
             loadData();
         });
@@ -194,7 +187,7 @@
             const today = new Date();
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
-            const formatDate = (d) => d.toISOString().split('T')[0];
+            const formatDate = function(d) { return d.toISOString().split('T')[0]; };
             
             document.getElementById('check-in').value = formatDate(today);
             document.getElementById('check-out').value = formatDate(tomorrow);
@@ -202,87 +195,48 @@
             document.getElementById('check-out').min = formatDate(tomorrow);
             updateDateInfo();
         }
-document.getElementById('check-in').addEventListener('change', updateDateInfo);
-        document.getElementById('check-out').addEventListener('change', updateDateInfo);
 
+        document.getElementById('check-in').addEventListener('change', updateDateInfo);
+        document.getElementById('check-out').addEventListener('change', updateDateInfo);
         function updateDateInfo() {
             const cin = document.getElementById('check-in').value;
             const cout = document.getElementById('check-out').value;
             if(cin && cout) {
                 const nights = Math.ceil((new Date(cout) - new Date(cin)) / (1000 * 60 * 60 * 24));
-                document.getElementById('date-info').textContent = nights > 0 ? '🌙' ${nights} ночей : '❌ Дата выезда должна быть позже даты заезда';
+                document.getElementById('date-info').textContent = nights > 0 ? '🌙 ' + nights + ' ночей' : '❌ Дата выезда должна быть позже даты заезда';
             }
         }
 
-        // Загрузка всех данных
-        async function loadData() {
-            try {
-                // Параллельная загрузка
-                const [settingsRes, roomsRes, slidesRes] = await Promise.all([
-                    fetch(${API_URL}?action=settings),
-                    fetch(${API_URL}?action=rooms),
-                    fetch(${API_URL}?action=slides)
-                ]);
-                
-                settings = await settingsRes.json();
-                rooms = await roomsRes.json();
-                slides = await slidesRes.json();
-                
-                // Применяем настройки
-                document.getElementById('site-title').textContent = settings.site_title || '🏠 Гостевой Дом';
-                document.getElementById('site-desc').textContent = settings.site_desc || '';
-                document.getElementById('phone-link').textContent = settings.phone || '';
-                document.getElementById('phone-link').href = tel:${settings.phone || ''};
-                document.getElementById('phone-link-map').textContent = settings.phone || '';
-                document.getElementById('phone-link-map').href = tel:${settings.phone || ''};
-                document.getElementById('address').textContent = settings.address || '';
-                document.getElementById('address-map').textContent = settings.address || '';
-                document.getElementById('email-map').textContent = settings.email || '';
-                document.getElementById('footer-text').textContent = ${settings.site_title || 'Гостевой Дом'} — ${settings.address || ''};
-                
-                // Рендерим слайдер и номера
-                initHeroSlider();
-                renderRooms(rooms);
-                
-            } catch(err) {
-                console.error('Ошибка загрузки:', err);
-                document.getElementById('rooms-container').innerHTML = 
-                    <div class="col-span-full text-center py-12 text-red-500">
-                        ⚠️ Ошибка загрузки данных. Проверьте подключение к API.
-                    </div>;
-            }
-        }
-
-        // Слайдер дома (динамический из таблицы)
         function initHeroSlider() {
             const container = document.getElementById('hero-slider');
             
-            if(!slides || slides.length === 0) {
-                container.innerHTML = '<div class="flex items-center justify-center h-full bg-gray-200 text-gray-500">Нет слайдов</div>';
+            if (!slides || slides.length === 0) {
+                container.innerHTML = '<div class="flex items-center justify-center h-full bg-gray-200 text-gray-500 rounded-xl"><div class="text-center"><p class="text-lg mb-2">🏠</p><p>Добро пожаловать в наш гостевой дом</p><p class="text-sm text-gray-400 mt-2">Добавьте фото в таблицу «Слайдер»</p></div></div>';
                 return;
             }
             
-            // Генерируем HTML слайдов
-            container.innerHTML = slides.map((slide, i) => 
-                <div class="hero-slide ${i === 0 ? 'active' : ''}" style="background-image: url('${slide.image_url}');">
-                    <div class="hero-overlay"></div>
-                    <div class="absolute bottom-16 left-8 text-white max-w-lg">
-                        <h2 class="text-3xl font-bold mb-2">${slide.title}</h2>
-                        <p class="text-lg opacity-90">${slide.subtitle}</p>
-                    </div>
-                </div>
-            ).join('') + '<div class="hero-dots" id="hero-dots"></div>';
+            let html = '';
+            for(let i = 0; i < slides.length; i++) {
+                html += '<div class="hero-slide ' + (i === 0 ? 'active' : '') + '" style="background-image: url(\'' + slides[i].image_url + '\');">';
+                html += '<div class="hero-overlay"></div>';
+                html += '<div class="absolute bottom-16 left-8 text-white max-w-lg z-10">';
+                html += '<h2 class="text-3xl font-bold mb-2 drop-shadow-lg">' + (slides[i].title || 'Гостевой Дом') + '</h2>';
+                html += '<p class="text-lg opacity-90 drop-shadow-md">' + (slides[i].subtitle || '') + '</p>';
+                html += '</div></div>';
+            }
+            html += '<div class="hero-dots" id="hero-dots"></div>';
+            container.innerHTML = html;
+            
             const dotsContainer = document.getElementById('hero-dots');
             let current = 0;
             const slideEls = container.querySelectorAll('.hero-slide');
             
-            // Создаём точки
-            slides.forEach((_, i) => {
+            for(let i = 0; i < slides.length; i++) {
                 const dot = document.createElement('div');
                 dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
-                dot.onclick = () => goToSlide(i);
+                dot.onclick = function() { goToSlide(i); };
                 dotsContainer.appendChild(dot);
-            });
+            }
             
             function goToSlide(index) {
                 slideEls[current].classList.remove('active');
@@ -296,72 +250,113 @@ document.getElementById('check-in').addEventListener('change', updateDateInfo);
                 goToSlide((current + 1) % slides.length);
             }
             
-            // Автопереключение
             if(heroInterval) clearInterval(heroInterval);
             heroInterval = setInterval(nextSlide, 5000);
         }
 
-        // Рендер номеров с галереей
-        function renderRooms(roomsToRender, showBooking = false) {
+        async function loadData() {
+            try {
+                const [settingsRes, roomsRes, slidesRes] = await Promise.all([
+                    fetch(API_URL + '?action=settings'),
+                    fetch(API_URL + '?action=rooms'),
+                    fetch(API_URL + '?action=slides')
+                ]);
+                
+                settings = await settingsRes.json();
+                rooms = await roomsRes.json();
+                slides = await slidesRes.json();
+                
+                console.log('Settings:', settings);
+                console.log('Rooms:', rooms);
+                console.log('Slides:', slides);
+                
+                document.getElementById('site-title').textContent = settings.site_title || '🏠 Гостевой Дом';
+                document.getElementById('site-desc').textContent = settings.site_desc || '';
+                document.getElementById('phone-link').textContent = settings.phone || '';
+                document.getElementById('phone-link').href = 'tel:' + (settings.phone || '');
+                document.getElementById('phone-link-map').href = 'tel:' + (settings.phone || '');
+                document.getElementById('address').textContent = settings.address || '';
+                document.getElementById('address-map').textContent = settings.address || '';
+                document.getElementById('phone-map').textContent = settings.phone || '';
+                document.getElementById('email-map').textContent = settings.email || '';
+                document.getElementById('footer-text').textContent = (settings.site_title  'Гостевой Дом') + ' — ' + (settings.address  '');
+                
+                initHeroSlider();
+                renderRooms(rooms);
+                
+            } catch(err) {
+                console.error('Ошибка загрузки:', err);
+                document.getElementById('rooms-container').innerHTML = '<div class="col-span-full text-center py-12 text-red-500">⚠️ Ошибка загрузки данных. Проверьте подключение к API.</div>';
+            }
+        }
+
+        function renderRooms(roomsToRender, showBooking) {
             const container = document.getElementById('rooms-container');
-            if(roomsToRender.length === 0) {
+            showBooking = showBooking || false;
+            
+            if(!roomsToRender || roomsToRender.length === 0) {
                 container.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500">Нет доступных номеров на выбранные даты</div>';
                 return;
             }
             
-            container.innerHTML = roomsToRender.map((room, roomIndex) => {
+            let html = '';
+            for(let r = 0; r < roomsToRender.length; r++) {
+                const room = roomsToRender[r];
                 const hasPhotos = room.photos && room.photos.length > 0;
                 const photoCount = hasPhotos ? room.photos.length : 0;
                 
-                return 
-                <div class="room-card bg-white rounded-2xl shadow-md overflow-hidden transition-all duration-300 fade-in ${room.status !== 'active' ? 'opacity-50' : ''}" data-room-index="${roomIndex}">
-                    <div class="room-gallery" onmouseenter="startGallery(${roomIndex})" onmouseleave="stopGallery(${roomIndex})">
-                        ${hasPhotos ? room.photos.map((photo, i) => 
-                            <img src="${photo}" alt="${room.name} ${i+1}" class="gallery-img-${roomIndex} ${i === 0 ? 'active' : ''}" onerror="this.style.display='none'">
-                        ).join('') : 
-                            <div class="flex items-center justify-center h-full text-gray-400 bg-gray-100">📷 Нет фото</div>
-                        }
-                        ${photoCount > 1 ? 
-                            <div class="photo-count">📷 ${photoCount}</div>
-                            <button class="gallery-arrow prev" onclick="event.stopPropagation(); prevPhoto(${roomIndex})">‹</button>
-                            <button class="gallery-arrow next" onclick="event.stopPropagation(); nextPhoto(${roomIndex})">›</button>
-                            <div class="gallery-nav">
-                                ${room.photos.map((_, i) => <div class="gallery-dot ${i === 0 ? 'active' : ''}" onclick="event.stopPropagation(); goToPhoto(${roomIndex}, ${i})"></div>).join('')}
-                            </div>
-                        ` : ''}
-                        <div class="absolute top-3 right-3 bg-white px-3 py-1 rounded-full text-sm font-semibold shadow z-10">
-                            ${room.price}${settings.currency || '₽'}/ночь
-                        </div>
-                    </div>
-                    <div class="p-5">
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="text-lg font-semibold text-gray-800">${room.name}</h3>
-                            <span class="text-sm text-gray-500">👥 до ${room.capacity} чел.</span>
-                    </div>
-                        <p class="text-gray-600 text-sm mb-4 line-clamp-3">${room.description || 'Комфортный номер для приятного отдыха.'}</p>
-                        ${showBooking && room.status === 'active' ? 
-                            <button onclick="openBookingModal('${room.id}', '${room.name}', ${room.price})" 
-                                    class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium">
-                                Забронировать
-                            </button>
-                         : room.status !== 'active' ? 
-                            <button disabled class="w-full bg-gray-300 text-gray-500 py-2 rounded-lg cursor-not-allowed">
-                                Недоступен
-                            </button>
-                         : ''}
-                    </div>
-                </div>
-            }).join('');
+                html += '<div class="room-card bg-white rounded-2xl shadow-md overflow-hidden transition-all duration-300 fade-in ' + (room.status !== 'active' ? 'opacity-50' : '') + '" data-room-index="' + r + '">';
+                
+                // Gallery
+                html += '<div class="room-gallery" onmouseenter="startGallery(' + r + ')" onmouseleave="stopGallery(' + r + ')">';
+                if(hasPhotos) {
+                    for(let p = 0; p < room.photos.length; p++) {
+                        html += '<img src="' + room.photos[p] + '" alt="' + room.name + ' ' + (p+1) + '" class="gallery-img-' + r + (p === 0 ? ' active' : '') + '" onerror="this.style.display=\'none\'">';
+                    }
+                } else {
+                    html += '<div class="flex items-center justify-center h-full text-gray-400 bg-gray-100">📷 Нет фото</div>';
+                }
+                
+                if(photoCount > 1) {
+                    html += '<div class="photo-count">📷 ' + photoCount + '</div>';
+                    html += '<button class="gallery-arrow prev" onclick="event.stopPropagation(); prevPhoto(' + r + ')">‹</button>';
+                    html += '<button class="gallery-arrow next" onclick="event.stopPropagation(); nextPhoto(' + r + ')">›</button>';
+                    html += '<div class="gallery-nav">';
+                    for(let p = 0; p < room.photos.length; p++) {
+                        html += '<div class="gallery-dot ' + (p === 0 ? 'active' : '') + '" onclick="event.stopPropagation(); goToPhoto(' + r + ', ' + p + ')"></div>';
+                    }
+                    html += '</div>';
+                }
+                
+                html += '<div class="absolute top-3 right-3 bg-white px-3 py-1 rounded-full text-sm font-semibold shadow z-10">' + room.price + (settings.currency || '₽') + '/ночь</div>';
+                html += '</div>';
+                
+                // Info
+                html += '<div class="p-5">';
+                html += '<div class="flex justify-between items-start mb-2">';
+                html += '<h3 class="text-lg font-semibold text-gray-800">' + room.name + '</h3>';
+                html += '<span class="text-sm text-gray-500">👥 до ' + room.capacity + ' чел.</span>';
+                html += '</div>';
+                html += '<p class="text-gray-600 text-sm mb-4 line-clamp-3">' + (room.description || 'Комфортный номер для приятного отдыха.') + '</p>';
+                
+                if(showBooking && room.status === 'active') {
+                    html += '<button onclick="openBookingModal(\'' + room.id + '\', \'' + room.name + '\', ' + room.price + ')" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium">Забронировать</button>';
+                } else if(room.status !== 'active') {
+                    html += '<button disabled class="w-full bg-gray-300 text-gray-500 py-2 rounded-lg cursor-not-allowed">Недоступен</button>';
+                }
+                
+                html += '</div></div>';
+            }
+            
+            container.innerHTML = html;
         }
 
-        // Галерея номеров
         const galleryIntervals = {};
 
         function startGallery(roomIndex) {
             const room = rooms[roomIndex];
-            if(!room.photos || room.photos.length <= 1) return;
-            
-            galleryIntervals[roomIndex] = setInterval(() => {
+            if(!room  !room.photos  room.photos.length <= 1) return;
+            galleryIntervals[roomIndex] = setInterval(function() {
                 nextPhoto(roomIndex);
             }, 2000);
         }
@@ -374,26 +369,35 @@ document.getElementById('check-in').addEventListener('change', updateDateInfo);
         }
 
         function goToPhoto(roomIndex, photoIndex) {
-            const imgs = document.querySelectorAll(.gallery-img-${roomIndex});
-            const dots = document.querySelectorAll(.room-card[data-room-index="${roomIndex}"] .gallery-dot);
-            
-            imgs.forEach((img, i) => img.classList.toggle('active', i === photoIndex));
-            dots.forEach((dot, i) => dot.classList.toggle('active', i === photoIndex));
+            const imgs = document.querySelectorAll('.gallery-img-' + roomIndex);
+            const dots = document.querySelectorAll('.room-card[data-room-index="' + roomIndex + '"] .gallery-dot');
+            for(let i = 0; i < imgs.length; i++) {
+                imgs[i].classList.toggle('active', i === photoIndex);
+            }
+            for(let i = 0; i < dots.length; i++) {
+                dots[i].classList.toggle('active', i === photoIndex);
+            }
         }
 
         function nextPhoto(roomIndex) {
             const room = rooms[roomIndex];
-            if(!room.photos) return;
-            const imgs = document.querySelectorAll(.gallery-img-${roomIndex});
-            let current = Array.from(imgs).findIndex(img => img.classList.contains('active'));
+            if(!room || !room.photos) return;
+            const imgs = document.querySelectorAll('.gallery-img-' + roomIndex);
+            let current = 0;
+            for(let i = 0; i < imgs.length; i++) {
+                if(imgs[i].classList.contains('active')) current = i;
+            }
             goToPhoto(roomIndex, (current + 1) % room.photos.length);
         }
 
         function prevPhoto(roomIndex) {
             const room = rooms[roomIndex];
-            if(!room.photos) return;
-            const imgs = document.querySelectorAll(.gallery-img-${roomIndex});
-            let current = Array.from(imgs).findIndex(img => img.classList.contains('active'));
+            if(!room || !room.photos) return;
+            const imgs = document.querySelectorAll('.gallery-img-' + roomIndex);
+            let current = 0;
+            for(let i = 0; i < imgs.length; i++) {
+                if(imgs[i].classList.contains('active')) current = i;
+            }
             goToPhoto(roomIndex, (current - 1 + room.photos.length) % room.photos.length);
         }
 
@@ -401,21 +405,28 @@ document.getElementById('check-in').addEventListener('change', updateDateInfo);
             const cin = document.getElementById('check-in').value;
             const cout = document.getElementById('check-out').value;
             
-            if(!cin || !cout || new Date(cout) <= new Date(cin)) {
+            if(!cin  !cout  new Date(cout) <= new Date(cin)) {
                 alert('Пожалуйста, выберите корректные даты');
                 return;
             }
             
             selectedDates = { checkIn: cin, checkOut: cout };
             document.getElementById('rooms-container').innerHTML = '<div class="flex justify-center py-12"><div class="loader"></div></div>';
-            
             try {
                 const availableRooms = [];
-                for(const room of rooms) {
+                for(let i = 0; i < rooms.length; i++) {
+                    const room = rooms[i];
                     if(room.status !== 'active') continue;
-                    const res = await fetch(${API_URL}?action=availability&room_id=${room.id}&start=${cin}&end=${cout}`);
+                    const res = await fetch(API_URL + '?action=availability&room_id=' + room.id + '&start=' + cin + '&end=' + cout);
                     const data = await res.json();
-                    const occupiedInRange = data.occupied_dates.filter(d => d >= cin && d < cout);
+                    let occupiedInRange = [];
+                    if(data.occupied_dates) {
+                        for(let d = 0; d < data.occupied_dates.length; d++) {
+                            if(data.occupied_dates[d] >= cin && data.occupied_dates[d] < cout) {
+                                occupiedInRange.push(data.occupied_dates[d]);
+                            }
+                        }
+                    }
                     if(occupiedInRange.length === 0) availableRooms.push(room);
                 }
                 renderRooms(availableRooms, true);
@@ -424,6 +435,7 @@ document.getElementById('check-in').addEventListener('change', updateDateInfo);
                 renderRooms(rooms, true);
             }
         }
+
         function openBookingModal(roomId, roomName, price) {
             const cin = document.getElementById('check-in').value;
             const cout = document.getElementById('check-out').value;
@@ -431,8 +443,8 @@ document.getElementById('check-in').addEventListener('change', updateDateInfo);
             
             document.getElementById('modal-room-id').value = roomId;
             document.getElementById('modal-room-name').textContent = roomName;
-            document.getElementById('modal-dates').textContent = ${cin} — ${cout} (${nights} ночей);
-            document.getElementById('modal-price').textContent = ${price * nights}${settings.currency || '₽'};
+            document.getElementById('modal-dates').textContent = cin + ' — ' + cout + ' (' + nights + ' ночей)';
+            document.getElementById('modal-price').textContent = (price * nights) + (settings.currency || '₽');
             document.getElementById('modal-check-in').value = cin;
             document.getElementById('modal-check-out').value = cout;
             
@@ -475,24 +487,27 @@ document.getElementById('check-in').addEventListener('change', updateDateInfo);
                 status.classList.remove('hidden');
                 
                 if(result.success) {
-                    status.innerHTML = <div class="bg-green-100 text-green-700 px-4 py-3 rounded-lg">✅ Бронирование #${result.booking_id} создано! Мы свяжемся с вами для подтверждения.</div>;
-                    setTimeout(() => { closeModal(); checkAvailability(); }, 3000);
+                    status.innerHTML = '<div class="bg-green-100 text-green-700 px-4 py-3 rounded-lg">✅ Бронирование #' + result.booking_id + ' создано! Мы свяжемся с вами для подтверждения.</div>';
+
+        setTimeout(function() { closeModal(); checkAvailability(); }, 3000);
                 } else {
-                    status.innerHTML = <div class="bg-red-100 text-red-700 px-4 py-3 rounded-lg">❌ ${result.error || 'Ошибка бронирования'}</div>;
+                    status.innerHTML = '<div class="bg-red-100 text-red-700 px-4 py-3 rounded-lg">❌ ' + (result.error || 'Ошибка бронирования') + '</div>';
                 }
             } catch(err) {
                 status.classList.remove('hidden');
-                status.innerHTML = <div class="bg-red-100 text-red-700 px-4 py-3 rounded-lg">❌ Ошибка сети. Попробуйте позже.</div>;
+                status.innerHTML = '<div class="bg-red-100 text-red-700 px-4 py-3 rounded-lg">❌ Ошибка сети. Попробуйте позже.</div>';
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Отправить заявку';
             }
         }
 
-        document.getElementById('booking-modal').addEventListener('click', (e) => {
+        document.getElementById('booking-modal').addEventListener('click', function(e) {
             if(e.target === document.getElementById('booking-modal')) closeModal();
         });
     </script>
 </body>
 </html>
+                
+  
                             
