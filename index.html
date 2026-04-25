@@ -13,6 +13,30 @@
         .room-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Слайдер дома */
+        .hero-slider { position: relative; height: 400px; overflow: hidden; border-radius: 1rem; }
+        .hero-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1s ease-in-out; background-size: cover; background-position: center; }
+        .hero-slide.active { opacity: 1; }
+        .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.2)); }
+        .hero-dots { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
+        .hero-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.3s; }
+        .hero-dot.active { background: white; width: 30px; border-radius: 5px; }
+        
+        /* Галерея номера */
+        .room-gallery { position: relative; height: 220px; overflow: hidden; }
+        .room-gallery img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.5s ease; }
+        .room-gallery img.active { opacity: 1; }
+        .gallery-nav { position: absolute; bottom: 10px; right: 10px; display: flex; gap: 4px; z-index: 10; opacity: 0; transition: opacity 0.3s; }
+        .room-card:hover .gallery-nav { opacity: 1; }
+        .gallery-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.6); cursor: pointer; }
+        .gallery-dot.active { background: white; }
+        .gallery-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; opacity: 0; transition: opacity 0.3s; z-index: 10; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+        .room-card:hover .gallery-arrow { opacity: 1; }
+        .gallery-arrow:hover { background: rgba(0,0,0,0.7); }
+        .gallery-arrow.prev { left: 10px; }
+        .gallery-arrow.next { right: 10px; }
+        .photo-count { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; z-index: 10; }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -32,6 +56,15 @@
 
     <main class="max-w-6xl mx-auto px-4 py-8">
         
+        <!-- Слайдер дома (динамический из таблицы) -->
+        <section class="mb-8 fade-in">
+            <div id="hero-slider" class="hero-slider shadow-xl">
+                <div class="flex items-center justify-center h-full bg-gray-200 text-gray-400">
+                    <div class="loader"></div>
+                </div>
+            </div>
+        </section>
+
         <section class="bg-white rounded-2xl shadow-lg p-6 mb-8 fade-in">
             <h2 class="text-xl font-semibold mb-4 text-gray-800">🔍 Проверить доступность</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -49,7 +82,7 @@
                         <option value="1">1 гость</option>
                         <option value="2">2 гостя</option>
                         <option value="3">3 гостя</option>
-                        <option value="4">4 гостя</option>
+                        <option value="4">7 гостей</option>
                     </select>
                 </div>
                 <div class="flex items-end">
@@ -66,7 +99,35 @@
             </div>
         </section>
 
+        <!-- Яндекс.Карта -->
+        <section class="bg-white rounded-2xl shadow-lg p-6 mb-8 fade-in">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">🗺️ Как нас найти</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <p class="text-gray-600 mb-2">Мы находимся в центре г. Чолпон-Ата, улица Чекирова 33. В шаговой доступности пляж, парковая зона и все необходимые коммуникации.. До центра — 15 минут, до моря — 7 минут ходьбы.</p>
+                    <p class="text-gray-600 mb-2"><strong>Адрес:</strong> г. Чолпон-Ата, улица Чекирова 33 <span id="address-map"></span></p>
+                    <p class="text-gray-600"><strong>Телефон:</strong> +7 777 798 77 00 <span id="phone-map"></span></p>
+                    <p class="text-gray-600"><strong>Email:</strong> obitel@mail.ru <span id="email-map"></span></p>
+                <div class="mt-4">
+                        <a href="tel:" id="phone-link-map" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            📞 Позвонить
+                        </a>
+                    </div>
+                </div>
+                <div class="rounded-xl overflow-hidden shadow-inner border border-gray-200" style="height: 400px;">
+                    <iframe src="https://yandex.ru/map-widget/v1/-/CPGfMJkJ" width="100%" height="100%" frameborder="0" allowfullscreen="true" style="border:0;"></iframe>
+                </div>
+            </div>
+        </section>
+        
+   
         <div id="booking-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6 fade-in">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Бронирование</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                </div>
+                <div id="booking-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
             <div class="bg-white rounded-2xl max-w-md w-full p-6 fade-in">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold">Бронирование</h3>
@@ -105,30 +166,7 @@
 
     </main>
 
-
-    <!-- Яндекс.Карта -->
-    <section class="bg-white rounded-2xl shadow-lg p-6 mb-8 fade-in">
-        <h2 class="text-xl font-semibold mb-4 text-gray-800">🗺️ Как нас найти</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <p class="text-gray-600 mb-2">Мы находимся в центре г. Чолпон-Ата, улица Чекирова 33. В шаговой доступности пляж, парковая зона и все необходимые коммуникации.. До центра — 15 минут, до моря — 7 минут ходьбы.</p>
-                <p class="text-gray-600 mb-2"><strong>Адрес:</strong> г. Чолпон-Ата, улица Чекирова 33 <span id="address-map"></span></p>
-                <p class="text-gray-600"><strong>Телефон:</strong> +7 777 798 77 00 <span id="phone-map"></span></p>
-                <p class="text-gray-600"><strong>Email:</strong> obitel@mail.ru <span id="email-map"></span></p>
-                <div class="mt-4">
-                    <a href="tel:" id="phone-link-map" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                        📞 Позвонить
-                    </a>
-                </div>
-            </div>
-            <div class="rounded-xl overflow-hidden shadow-inner border border-gray-200" style="height: 400px;">
-                <!-- Яндекс.Карта iframe -->
-                <iframe src="https://yandex.ru/map-widget/v1/-/CPGfMJkJ" width="100%" height="100%" frameborder="0" allowfullscreen="true" style="border:0;"></iframe>
-            </div>
-        </div>
-    </section>
-  
-    <footer class="bg-gray-800 text-white py-8 mt-12">
+     <footer class="bg-gray-800 text-white py-8 mt-12">
         <div class="max-w-6xl mx-auto px-4 text-center">
             <p id="footer-text" class="text-gray-400"></p>
             <p class="text-gray-500 text-sm mt-2">Работаем с Ostrovok.ru и Sutochno.ru ⚡</p>
@@ -164,8 +202,7 @@
             document.getElementById('check-out').min = formatDate(tomorrow);
             updateDateInfo();
         }
-
-        document.getElementById('check-in').addEventListener('change', updateDateInfo);
+document.getElementById('check-in').addEventListener('change', updateDateInfo);
         document.getElementById('check-out').addEventListener('change', updateDateInfo);
 
         function updateDateInfo() {
@@ -173,35 +210,98 @@
             const cout = document.getElementById('check-out').value;
             if(cin && cout) {
                 const nights = Math.ceil((new Date(cout) - new Date(cin)) / (1000 * 60 * 60 * 24));
-                document.getElementById('date-info').textContent = nights > 0 ? `🌙 ${nights} ночей` : '❌ Дата выезда должна быть позже даты заезда';
+                document.getElementById('date-info').textContent = nights > 0 ? 🌙 ${nights} ночей : '❌ Дата выезда должна быть позже даты заезда';
             }
         }
 
+        // Загрузка всех данных
         async function loadData() {
             try {
-                const settingsRes = await fetch(`${API_URL}?action=settings`);
-                settings = await settingsRes.json();
+                // Параллельная загрузка
+                const [settingsRes, roomsRes, slidesRes] = await Promise.all([
+                    fetch(${API_URL}?action=settings),
+                    fetch(${API_URL}?action=rooms),
+                    fetch(${API_URL}?action=slides)
+                ]);
                 
+                settings = await settingsRes.json();
+                rooms = await roomsRes.json();
+                slides = await slidesRes.json();
+                
+                // Применяем настройки
                 document.getElementById('site-title').textContent = settings.site_title || '🏠 Гостевой Дом';
                 document.getElementById('site-desc').textContent = settings.site_desc || '';
                 document.getElementById('phone-link').textContent = settings.phone || '';
-                document.getElementById('phone-link').href = `tel:${settings.phone || ''}`;
+                document.getElementById('phone-link').href = tel:${settings.phone || ''};
+                document.getElementById('phone-link-map').textContent = settings.phone || '';
+                document.getElementById('phone-link-map').href = tel:${settings.phone || ''};
                 document.getElementById('address').textContent = settings.address || '';
-                document.getElementById('footer-text').textContent = `${settings.site_title || 'Гостевой Дом'} — ${settings.address || ''}`;
+                document.getElementById('address-map').textContent = settings.address || '';
+                document.getElementById('email-map').textContent = settings.email || '';
+                document.getElementById('footer-text').textContent = ${settings.site_title || 'Гостевой Дом'} — ${settings.address || ''};
                 
-                const roomsRes = await fetch(`${API_URL}?action=rooms`);
-                rooms = await roomsRes.json();
+                // Рендерим слайдер и номера
+                initHeroSlider();
                 renderRooms(rooms);
                 
             } catch(err) {
                 console.error('Ошибка загрузки:', err);
-                document.getElementById('rooms-container').innerHTML = `
+                document.getElementById('rooms-container').innerHTML = 
                     <div class="col-span-full text-center py-12 text-red-500">
                         ⚠️ Ошибка загрузки данных. Проверьте подключение к API.
-                    </div>`;
+                    </div>;
             }
         }
 
+        // Слайдер дома (динамический из таблицы)
+        function initHeroSlider() {
+            const container = document.getElementById('hero-slider');
+            
+            if(!slides || slides.length === 0) {
+                container.innerHTML = '<div class="flex items-center justify-center h-full bg-gray-200 text-gray-500">Нет слайдов</div>';
+                return;
+            }
+            
+            // Генерируем HTML слайдов
+            container.innerHTML = slides.map((slide, i) => 
+                <div class="hero-slide ${i === 0 ? 'active' : ''}" style="background-image: url('${slide.image_url}');">
+                    <div class="hero-overlay"></div>
+                    <div class="absolute bottom-16 left-8 text-white max-w-lg">
+                        <h2 class="text-3xl font-bold mb-2">${slide.title}</h2>
+                        <p class="text-lg opacity-90">${slide.subtitle}</p>
+                    </div>
+                </div>
+            ).join('') + '<div class="hero-dots" id="hero-dots"></div>';
+            const dotsContainer = document.getElementById('hero-dots');
+            let current = 0;
+            const slideEls = container.querySelectorAll('.hero-slide');
+            
+            // Создаём точки
+            slides.forEach((_, i) => {
+                const dot = document.createElement('div');
+                dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
+                dot.onclick = () => goToSlide(i);
+                dotsContainer.appendChild(dot);
+            });
+            
+            function goToSlide(index) {
+                slideEls[current].classList.remove('active');
+                dotsContainer.children[current].classList.remove('active');
+                current = index;
+                slideEls[current].classList.add('active');
+                dotsContainer.children[current].classList.add('active');
+            }
+            
+            function nextSlide() {
+                goToSlide((current + 1) % slides.length);
+            }
+            
+            // Автопереключение
+            if(heroInterval) clearInterval(heroInterval);
+            heroInterval = setInterval(nextSlide, 5000);
+        }
+
+        // Рендер номеров с галереей
         function renderRooms(roomsToRender, showBooking = false) {
             const container = document.getElementById('rooms-container');
             if(roomsToRender.length === 0) {
@@ -209,14 +309,27 @@
                 return;
             }
             
-            container.innerHTML = roomsToRender.map(room => `
-                <div class="room-card bg-white rounded-2xl shadow-md overflow-hidden transition-all duration-300 fade-in ${room.status !== 'active' ? 'opacity-50' : ''}">
-                    <div class="h-48 bg-gray-200 relative overflow-hidden">
-                        ${room.photo_url ? 
-                            `<img src="${room.photo_url}" alt="${room.name}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-gray-400\\'>📷 Нет фото</div>'">` :
-                            '<div class="flex items-center justify-center h-full text-gray-400">📷 Нет фото</div>'
+            container.innerHTML = roomsToRender.map((room, roomIndex) => {
+                const hasPhotos = room.photos && room.photos.length > 0;
+                const photoCount = hasPhotos ? room.photos.length : 0;
+                
+                return 
+                <div class="room-card bg-white rounded-2xl shadow-md overflow-hidden transition-all duration-300 fade-in ${room.status !== 'active' ? 'opacity-50' : ''}" data-room-index="${roomIndex}">
+                    <div class="room-gallery" onmouseenter="startGallery(${roomIndex})" onmouseleave="stopGallery(${roomIndex})">
+                        ${hasPhotos ? room.photos.map((photo, i) => 
+                            <img src="${photo}" alt="${room.name} ${i+1}" class="gallery-img-${roomIndex} ${i === 0 ? 'active' : ''}" onerror="this.style.display='none'">
+                        ).join('') : 
+                            <div class="flex items-center justify-center h-full text-gray-400 bg-gray-100">📷 Нет фото</div>
                         }
-                        <div class="absolute top-3 right-3 bg-white px-3 py-1 rounded-full text-sm font-semibold shadow">
+                        ${photoCount > 1 ? 
+                            <div class="photo-count">📷 ${photoCount}</div>
+                            <button class="gallery-arrow prev" onclick="event.stopPropagation(); prevPhoto(${roomIndex})">‹</button>
+                            <button class="gallery-arrow next" onclick="event.stopPropagation(); nextPhoto(${roomIndex})">›</button>
+                            <div class="gallery-nav">
+                                ${room.photos.map((_, i) => <div class="gallery-dot ${i === 0 ? 'active' : ''}" onclick="event.stopPropagation(); goToPhoto(${roomIndex}, ${i})"></div>).join('')}
+                            </div>
+                        ` : ''}
+                        <div class="absolute top-3 right-3 bg-white px-3 py-1 rounded-full text-sm font-semibold shadow z-10">
                             ${room.price}${settings.currency || '₽'}/ночь
                         </div>
                     </div>
@@ -224,21 +337,64 @@
                         <div class="flex justify-between items-start mb-2">
                             <h3 class="text-lg font-semibold text-gray-800">${room.name}</h3>
                             <span class="text-sm text-gray-500">👥 до ${room.capacity} чел.</span>
-                        </div>
+                    </div>
                         <p class="text-gray-600 text-sm mb-4 line-clamp-3">${room.description || 'Комфортный номер для приятного отдыха.'}</p>
-                        ${showBooking && room.status === 'active' ? `
+                        ${showBooking && room.status === 'active' ? 
                             <button onclick="openBookingModal('${room.id}', '${room.name}', ${room.price})" 
                                     class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium">
                                 Забронировать
                             </button>
-                        ` : room.status !== 'active' ? `
+                         : room.status !== 'active' ? 
                             <button disabled class="w-full bg-gray-300 text-gray-500 py-2 rounded-lg cursor-not-allowed">
                                 Недоступен
                             </button>
-                        ` : ''}
+                         : ''}
                     </div>
                 </div>
-            `).join('');
+            }).join('');
+        }
+
+        // Галерея номеров
+        const galleryIntervals = {};
+
+        function startGallery(roomIndex) {
+            const room = rooms[roomIndex];
+            if(!room.photos || room.photos.length <= 1) return;
+            
+            galleryIntervals[roomIndex] = setInterval(() => {
+                nextPhoto(roomIndex);
+            }, 2000);
+        }
+
+        function stopGallery(roomIndex) {
+            if(galleryIntervals[roomIndex]) {
+                clearInterval(galleryIntervals[roomIndex]);
+                delete galleryIntervals[roomIndex];
+            }
+        }
+
+        function goToPhoto(roomIndex, photoIndex) {
+            const imgs = document.querySelectorAll(.gallery-img-${roomIndex});
+            const dots = document.querySelectorAll(.room-card[data-room-index="${roomIndex}"] .gallery-dot);
+            
+            imgs.forEach((img, i) => img.classList.toggle('active', i === photoIndex));
+            dots.forEach((dot, i) => dot.classList.toggle('active', i === photoIndex));
+        }
+
+        function nextPhoto(roomIndex) {
+            const room = rooms[roomIndex];
+            if(!room.photos) return;
+            const imgs = document.querySelectorAll(.gallery-img-${roomIndex});
+            let current = Array.from(imgs).findIndex(img => img.classList.contains('active'));
+            goToPhoto(roomIndex, (current + 1) % room.photos.length);
+        }
+
+        function prevPhoto(roomIndex) {
+            const room = rooms[roomIndex];
+            if(!room.photos) return;
+            const imgs = document.querySelectorAll(.gallery-img-${roomIndex});
+            let current = Array.from(imgs).findIndex(img => img.classList.contains('active'));
+            goToPhoto(roomIndex, (current - 1 + room.photos.length) % room.photos.length);
         }
 
         async function checkAvailability() {
@@ -257,7 +413,7 @@
                 const availableRooms = [];
                 for(const room of rooms) {
                     if(room.status !== 'active') continue;
-                    const res = await fetch(`${API_URL}?action=availability&room_id=${room.id}&start=${cin}&end=${cout}`);
+                    const res = await fetch(${API_URL}?action=availability&room_id=${room.id}&start=${cin}&end=${cout}`);
                     const data = await res.json();
                     const occupiedInRange = data.occupied_dates.filter(d => d >= cin && d < cout);
                     if(occupiedInRange.length === 0) availableRooms.push(room);
@@ -268,7 +424,6 @@
                 renderRooms(rooms, true);
             }
         }
-
         function openBookingModal(roomId, roomName, price) {
             const cin = document.getElementById('check-in').value;
             const cout = document.getElementById('check-out').value;
@@ -276,8 +431,8 @@
             
             document.getElementById('modal-room-id').value = roomId;
             document.getElementById('modal-room-name').textContent = roomName;
-            document.getElementById('modal-dates').textContent = `${cin} — ${cout} (${nights} ночей)`;
-            document.getElementById('modal-price').textContent = `${price * nights}${settings.currency || '₽'}`;
+            document.getElementById('modal-dates').textContent = ${cin} — ${cout} (${nights} ночей);
+            document.getElementById('modal-price').textContent = ${price * nights}${settings.currency || '₽'};
             document.getElementById('modal-check-in').value = cin;
             document.getElementById('modal-check-out').value = cout;
             
@@ -320,14 +475,14 @@
                 status.classList.remove('hidden');
                 
                 if(result.success) {
-                    status.innerHTML = `<div class="bg-green-100 text-green-700 px-4 py-3 rounded-lg">✅ Бронирование #${result.booking_id} создано! Мы свяжемся с вами для подтверждения.</div>`;
+                    status.innerHTML = <div class="bg-green-100 text-green-700 px-4 py-3 rounded-lg">✅ Бронирование #${result.booking_id} создано! Мы свяжемся с вами для подтверждения.</div>;
                     setTimeout(() => { closeModal(); checkAvailability(); }, 3000);
                 } else {
-                    status.innerHTML = `<div class="bg-red-100 text-red-700 px-4 py-3 rounded-lg">❌ ${result.error || 'Ошибка бронирования'}</div>`;
+                    status.innerHTML = <div class="bg-red-100 text-red-700 px-4 py-3 rounded-lg">❌ ${result.error || 'Ошибка бронирования'}</div>;
                 }
             } catch(err) {
                 status.classList.remove('hidden');
-                status.innerHTML = `<div class="bg-red-100 text-red-700 px-4 py-3 rounded-lg">❌ Ошибка сети. Попробуйте позже.</div>`;
+                status.innerHTML = <div class="bg-red-100 text-red-700 px-4 py-3 rounded-lg">❌ Ошибка сети. Попробуйте позже.</div>;
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Отправить заявку';
@@ -340,3 +495,4 @@
     </script>
 </body>
 </html>
+                            
