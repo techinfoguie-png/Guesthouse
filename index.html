@@ -456,7 +456,7 @@
             
             document.getElementById('modal-room-id').value = roomId;
             document.getElementById('modal-room-name').textContent = roomName;
-            document.getElementById('modal-dates').textContent = cin + ' — ' + cout + ' (' + nights + ' ночей)';
+            document.getElementById('modal-dates').textContent = cin + ' — ' + cout + ' (' + nights + ' суток)';
             document.getElementById('modal-price').textContent = (price * nights) + (settings.currency || '₽');
             document.getElementById('modal-check-in').value = cin;
             document.getElementById('modal-check-out').value = cout;
@@ -567,7 +567,7 @@
             widgetOpen = !widgetOpen;
             document.getElementById('widget-buttons').classList.toggle('open', widgetOpen);
             document.getElementById('widget-toggle').classList.toggle('open', widgetOpen);
-            document.getElementById('widget-toggle').textContent = widgetOpen ? '✕' : '✉️';
+            document.getElementById('widget-toggle').textContent = widgetOpen ? '✕' : '💬';
         }
         
         // Закрыть при клике вне виджета
