@@ -194,7 +194,7 @@
             const cout = document.getElementById('check-out').value;
             if(cin && cout) {
                 const nights = Math.ceil((new Date(cout) - new Date(cin)) / (1000 * 60 * 60 * 24));
-                document.getElementById('date-info').textContent = nights > 0 ? '🌙 ' + nights + ' ночей' : '❌ Дата выезда должна быть позже даты заезда';
+                document.getElementById('date-info').textContent = nights > 0 ? '🌙 ' + nights + 'суток' : '❌ Дата выезда должна быть позже даты заезда';
             }
         }
 
@@ -549,9 +549,9 @@
     </div>
     <style>
         #widget-buttons.open {
-            opacity: 1;
-            pointer-events: auto;
-            transform: translateY(0);
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            transform: translateY(0) !important;
         }
         #widget-toggle.open {
             transform: rotate(45deg);
