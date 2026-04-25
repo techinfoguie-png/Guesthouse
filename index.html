@@ -38,21 +38,24 @@
     </style>
     <link rel="icon" type="image/png" href="https://img.icons8.com/color/48/home.png">
 </head>
-<body class="bg-gray-50 min-h-screen">
-    
-    <header class="bg-white shadow-sm sticky top-0 z-50">
+<body class="bg-gray-50 min-h-screen">           
+     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
             <div>
                 <h1 id="site-title" class="text-2xl font-bold text-gray-800">🏠 Гостевой Дом</h1>
                 <p id="site-desc" class="text-sm text-gray-500 mt-1">Загрузка...</p>
             </div>
             <div class="text-right">
-                <a id="phone-link" href="tel:" class="text-blue-600 font-semibold hover:text-blue-800 transition"></a>
-                <a id="phone-link-local" href="tel:" class="text-blue-600 font-semibold hover:text-blue-800 transition"></a>
+                <div class="flex flex-col gap-1">
+                    <a id="phone-link" href="tel:" class="text-blue-600 font-semibold hover:text-blue-800 transition"></a>
+                    <a id="phone-link-2" href="tel:" class="text-blue-500 text-sm hover:text-blue-700 transition" style="display:none;"></a>
+                </div>
                 <p id="address" class="text-xs text-gray-400 mt-1"></p>
             </div>
         </div>
     </header>
+
+    
     <main class="max-w-6xl mx-auto px-4 py-8">
         
         <section class="mb-8 fade-in">
@@ -261,25 +264,56 @@
                 console.log('Rooms:', rooms);
                 console.log('Slides:', slides);
                 
+                // Заголовок
                 document.getElementById('site-title').textContent = settings.site_title || '🏠 Гостевой Дом';
                 document.getElementById('site-desc').textContent = settings.site_desc || '';
-                document.getElementById('phone-link').textContent = settings.phone || '';
-                document.getElementById('phone-link').href = 'tel:' + (settings.phone || '');
-                document.getElementById('phone-link-map').href = 'tel:' + (settings.phone || '');
-                document.getElementById('address').textContent = settings.address || '';
-                document.getElementById('address-map').textContent = settings.address || '';
-                document.getElementById('phone-map').textContent = settings.phone || '';
-                document.getElementById('footer-text').textContent = (settings.site_title ||'Гостевой Дом') + ' — ' + (settings.address || '');
+                
+                // Телефон 1
+                const phone = settings.phone || '';
+                document.getElementById('phone-link').textContent = phone;
+                document.getElementById('phone-link').href = phone ? 'tel:' + phone : '#';
+                document.getElementById('phone-map').textContent = phone;
+                document.getElementById('phone-link-map').href = phone ? 'tel:' + phone : '#';
+                
+                // Телефон 2 (показываем только если есть в таблице)
+                const phone2 = settings.phone_2 || '';
+                if (phone2) {
+                    document.getElementById('phone-link-2').textContent = phone2;
+                    document.getElementById('phone-link-2').href = 'tel:' + phone2;
+                    document.getElementById('phone-link-2').style.display = 'inline';
+                    
+                    document.getElementById('phone-2-map').textContent = phone2;
+                    document.getElementById('phone-2-link-map').href = 'tel:' + phone2;
+                    document.getElementById('phone-2-container').style.display = 'block';
+                    document.getElementById('phone-2-link-map').style.display = 'inline-flex';
+                }
+                
+                // Адрес
+                const address = settings.address || '';
+                document.getElementById('address').textContent = address;
+                document.getElementById('address-map').textContent = address;
+                
+                // Email УБРАН с сайта, но остаётся в таблице для заявок
+                
+                // Подвал
+                document.getElementById('footer-text').textContent = 
+                    (settings.site_title || 'Гостевой Дом') + 
+                    (address ? ' — ' + address : '');
                 
                 initHeroSlider();
                 renderRooms(rooms);
                 
             } catch(err) {
                 console.error('Ошибка загрузки:', err);
-                document.getElementById('rooms-container').innerHTML = '<div class="col-span-full text-center py-12 text-red-500">⚠️ Ошибка загрузки данных. Проверьте подключение к API.</div>';
+                document.getElementById('rooms-container').innerHTML = 
+                    '<div class="col-span-full text-center py-12 text-red-500">' +
+                    '⚠️ Ошибка загрузки данных. Проверьте подключение к API.' +
+                    '</div>';
             }
         }
 
+
+        
         function renderRooms(roomsToRender, showBooking) {
             const container = document.getElementById('rooms-container');
             showBooking = showBooking || false;
