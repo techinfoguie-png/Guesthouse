@@ -274,32 +274,19 @@
                 document.getElementById('site-title').textContent = settings.site_title || '🏠 Гостевой Дом';
                 document.getElementById('site-desc').textContent = settings.site_desc || '';
                 
-                // Телефон 1
-                const phone = settings.phone || '';
+                  const phone = settings.phone || '';
                 document.getElementById('phone-link').textContent = phone;
                 document.getElementById('phone-link').href = phone ? 'tel:' + phone : '#';
                 document.getElementById('phone-map').textContent = phone;
                 document.getElementById('phone-link-map').href = phone ? 'tel:' + phone : '#';
                 
-                // Телефон 2 (показываем только если есть в таблице)
+                // Телефон 2 — только в шапке
                 const phone2 = settings.phone_2 || '';
-                const phone2MapEl = document.getElementById('phone-2-map');
-                const phone2ContainerEl = document.getElementById('phone-2-container');
-                const phone2LinkMapEl = document.getElementById('phone-2-link-map');
                 const phoneLink2El = document.getElementById('phone-link-2');
-                
-                if (phone2 && phone2MapEl) {
-                    phone2MapEl.textContent = phone2;
-                    if (phone2ContainerEl) phone2ContainerEl.style.display = 'block';
-                    if (phone2LinkMapEl) {
-                        phone2LinkMapEl.href = 'tel:' + phone2;
-                        phone2LinkMapEl.style.display = 'inline-flex';
-                    }
-                    if (phoneLink2El) {
-                        phoneLink2El.textContent = phone2;
-                        phoneLink2El.href = 'tel:' + phone2;
-                        phoneLink2El.style.display = 'inline';
-                    }
+                if (phone2 && phoneLink2El) {
+                    phoneLink2El.textContent = phone2;
+                    phoneLink2El.href = 'tel:' + phone2;
+                    phoneLink2El.style.display = 'inline';
                 }
                 // Адрес
                 const address = settings.address || '';
