@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>Админка | Гостевой дом</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Форма входа -->
+    <div id="loginScreen" class="login-screen active">
+        <div class="login-card">
+            <div class="login-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h2>Вход в админку</h2>
+            <p class="login-subtitle">Гостевой дом • Управление</p>
+            <div class="input-group">
+                <i class="fas fa-key"></i>
+                <input type="password" id="adminPassword" placeholder="Введите пароль" autocomplete="off">
+            </div>
+            <button id="loginBtn" class="btn-login">Войти <i class="fas fa-arrow-right"></i></button>
+            <div id="loginError" class="error-message"></div>
+        </div>
+    </div>
+
+    <!-- Основной интерфейс админки -->
+    <div id="adminPanel" class="admin-panel">
+        <!-- Мобильное меню (гамбургер) -->
+        <div class="mobile-header">
+            <button id="menuToggle" class="menu-toggle"><i class="fas fa-bars"></i></button>
+            <h1>Админка</h1>
+            <button id="logoutBtnMobile" class="logout-icon"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+
+        <!-- Боковое меню (desktop + mobile адаптив) -->
+        <nav id="sideMenu" class="side-menu">
+            <div class="menu-header">
+                <i class="fas fa-home"></i>
+                <span>Гостевой дом</span>
+            </div>
+            <ul class="menu-items">
+                <li data-tab="bookings" class="active"><i class="fas fa-calendar-check"></i><span>Бронирования</span><span class="badge" id="newBookingsBadge">0</span></li>
+                <li data-tab="rooms"><i class="fas fa-bed"></i><span>Номера и цены</span></li>
+                <li data-tab="slides"><i class="fas fa-images"></i><span>Слайдер</span></li>
+                <li data-tab="settings"><i class="fas fa-sliders-h"></i><span>Настройки</span></li>
+            </ul>
+            <button id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</button>
+        </nav>
+
+        <!-- Основной контент -->
+        <main class="main-content">
+            <!-- Вкладка: Бронирования -->
+            <div id="bookingsTab" class="tab-content active">
+                <div class="page-header">
+                    <h2><i class="fas fa-calendar-check"></i> Управление бронированиями</h2>
+                    <div class="filter-bar">
+                        <select id="statusFilter">
+                            <option value="all">Все статусы</option>
+                            <option value="new">🟡 Новые</option>
+                            <option value="confirmed">✅ Подтверждённые</option>
+                            <option value="cancelled">❌ Отменённые</option>
+                        </select>
+                        <input type="text" id="searchBookings" placeholder="Поиск по имени или телефону...">
+                    </div>
+                </div>
+                <div id="bookingsList" class="bookings-list">
+                    <div class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div>
+                </div>
+            </div>
+
+            <!-- Вкладка: Номера -->
+            <div id="roomsTab" class="tab-content">
+                <div class="page-header">
+                    <h2><i class="fas fa-bed"></i> Управление номерами</h2>
+                </div>
+                <div id="roomsList" class="rooms-grid"></div>
+            </div>
+
+            <!-- Вкладка: Слайдер -->
+            <div id="slidesTab" class="tab-content">
+                <div class="page-header">
+                    <h2><i class="fas fa-images"></i> Управление слайдером</h2>
+                    <button id="addSlideBtn" class="btn-primary"><i class="fas fa-plus"></i> Добавить слайд</button>
+                </div>
+                <div id="slidesList" class="slides-list"></div>
+            </div>
+
+            <!-- Вкладка: Настройки -->
+            <div id="settingsTab" class="tab-content">
+                <div class="page-header">
+                    <h2><i class="fas fa-sliders-h"></i> Настройки сайта</h2>
+                </div>
+                <div id="settingsForm" class="settings-form"></div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Модальное окно для редактирования слайда -->
+<div id="slideModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3 id="modalTitle">Редактировать слайд</h3>
+        <input type="text" id="slideImageUrl" placeholder="URL изображения">
+        <input type="text" id="slideTitle" placeholder="Заголовок">
+        <input type="text" id="slideSubtitle" placeholder="Подзаголовок">
+        <input type="hidden" id="slideRowId">
+        <button id="saveSlideBtn" class="btn-primary">Сохранить</button>
+        <button id="deleteSlideBtn" class="btn-danger">Удалить</button>
+    </div>
+</div>
+
+<!-- Модальное окно для редактирования номера -->
+<div id="roomModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Редактировать номер</h3>
+        <input type="hidden" id="roomId">
+        <div class="form-group">
+            <label>Цена (₽/ночь)</label>
+            <input type="number" id="roomPrice" placeholder="Цена">
+        </div>
+        <div class="form-group">
+            <label>Описание</label>
+            <textarea id="roomDescription" rows="4" placeholder="Описание номера"></textarea>
+        </div>
+        <button id="saveRoomBtn" class="btn-primary">Сохранить изменения</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
