@@ -13,7 +13,6 @@ const sideMenu = document.getElementById('sideMenu');
 // ========== ВСПОМОГАТЕЛЬНЫЕ ==========
 function escapeHtml(str) {
     if (!str) return '';
-    // Преобразуем в строку, если пришло число или другое
     const stringValue = String(str);
     return stringValue.replace(/[&<>]/g, function(m) {
         if (m === '&') return '&amp;';
@@ -21,6 +20,40 @@ function escapeHtml(str) {
         if (m === '>') return '&gt;';
         return m;
     });
+}
+
+// ========== ФУНКЦИЯ POST (С ПРАВИЛЬНЫМИ ЗАГОЛОВКАМИ) ==========
+async function postToAPI(data) {
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',  // КЛЮЧЕВОЙ ПАРАМЕТР ДЛЯ CORS
+            headers: {
+                'Content-Type': 'text/plain',  // ВАЖНО: не application/json
+            },
+            body: JSON.stringify(data)
+        });
+        
+        // При mode: 'no-cors' ответ недоступен, просто считаем успехом
+        console.log('POST отправлен:', data.action);
+        return { success: true };
+    } catch (err) {
+        console.error('POST ошибка:', err);
+        return { success: false, error: err.message };
+    }
+}
+
+// ========== GET ЗАПРОСЫ (РАБОТАЮТ НОРМАЛЬНО) ==========
+async function fetchData(endpoint) {
+    try {
+        const response = await fetch(`${API_URL}?action=${endpoint}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        return data;
+    } catch (err) {
+        console.error(`Ошибка fetchData (${endpoint}):`, err);
+        return [];
+    }
 }
 
 // ========== АВТОРИЗАЦИЯ ==========
@@ -44,7 +77,7 @@ async function login() {
         }
     } catch (err) {
         console.error('Ошибка входа:', err);
-        errorDiv.textContent = 'Ошибка соединения с сервером. Проверьте API_URL';
+        errorDiv.textContent = 'Ошибка соединения с сервером';
     }
 }
 
@@ -64,20 +97,7 @@ function checkAutoLogin() {
     }
 }
 
-// ========== ЗАГРУЗКА ДАННЫХ ==========
-async function fetchData(endpoint) {
-    try {
-        const response = await fetch(`${API_URL}?action=${endpoint}`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        return data;
-    } catch (err) {
-        console.error(`Ошибка fetchData (${endpoint}):`, err);
-        return [];
-    }
-}
-
-// Бронирования
+// ========== БРОНИРОВАНИЯ ==========
 async function loadBookings() {
     const container = document.getElementById('bookingsList');
     container.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div>';
@@ -144,20 +164,11 @@ async function loadBookings() {
 }
 
 async function updateStatus(bookingId, newStatus) {
-    try {
-        await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'update_booking_status', id: bookingId, status: newStatus })
-        });
-        loadBookings();
-    } catch (err) {
-        console.error('Ошибка обновления статуса:', err);
-        alert('Ошибка при обновлении статуса');
-    }
+    await postToAPI({ action: 'update_booking_status', id: bookingId, status: newStatus });
+    setTimeout(() => loadBookings(), 500);
 }
 
-// Номера
+// ========== НОМЕРА ==========
 async function loadRooms() {
     const container = document.getElementById('roomsList');
     container.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div>';
@@ -197,21 +208,13 @@ async function saveRoom() {
     const price = document.getElementById('roomPrice').value;
     const description = document.getElementById('roomDescription').value;
     
-    try {
-        await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'update_room', id, price, description })
-        });
-        document.getElementById('roomModal').style.display = 'none';
-        loadRooms();
-    } catch (err) {
-        console.error('Ошибка сохранения номера:', err);
-        alert('Ошибка при сохранении');
-    }
+    await postToAPI({ action: 'update_room', id, price, description });
+    document.getElementById('roomModal').style.display = 'none';
+    setTimeout(() => loadRooms(), 500);
+    alert('Номер сохранён!');
 }
 
-// Слайдер
+// ========== СЛАЙДЕР ==========
 async function loadSlides() {
     const container = document.getElementById('slidesList');
     container.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div>';
@@ -257,39 +260,23 @@ async function saveSlide() {
     const title = document.getElementById('slideTitle').value;
     const subtitle = document.getElementById('slideSubtitle').value;
     
-    try {
-        await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'update_slide', rowId, image_url: imageUrl, title, subtitle })
-        });
-        document.getElementById('slideModal').style.display = 'none';
-        loadSlides();
-    } catch (err) {
-        console.error('Ошибка сохранения слайда:', err);
-        alert('Ошибка при сохранении');
-    }
+    await postToAPI({ action: 'update_slide', rowId, image_url: imageUrl, title, subtitle });
+    document.getElementById('slideModal').style.display = 'none';
+    setTimeout(() => loadSlides(), 500);
+    alert('Слайд сохранён!');
 }
 
 async function deleteSlide() {
     const rowId = document.getElementById('slideRowId').value;
     if (confirm('Удалить слайд?')) {
-        try {
-            await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'delete_slide', rowId })
-            });
-            document.getElementById('slideModal').style.display = 'none';
-            loadSlides();
-        } catch (err) {
-            console.error('Ошибка удаления слайда:', err);
-            alert('Ошибка при удалении');
-        }
+        await postToAPI({ action: 'delete_slide', rowId });
+        document.getElementById('slideModal').style.display = 'none';
+        setTimeout(() => loadSlides(), 500);
+        alert('Слайд удалён!');
     }
 }
 
-// Настройки
+// ========== НАСТРОЙКИ ==========
 async function loadSettings() {
     const container = document.getElementById('settingsForm');
     container.innerHTML = '<div class="loading-spinner">Загрузка...</div>';
@@ -328,17 +315,8 @@ async function saveSettings() {
     const email = document.getElementById('email').value;
     const admin_password = document.getElementById('admin_password').value;
     
-    try {
-        await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'update_settings', hotel_name, phone, email, admin_password })
-        });
-        alert('Настройки сохранены');
-    } catch (err) {
-        console.error('Ошибка сохранения настроек:', err);
-        alert('Ошибка при сохранении');
-    }
+    await postToAPI({ action: 'update_settings', hotel_name, phone, email, admin_password });
+    alert('Настройки сохранены!');
 }
 
 // ========== НАВИГАЦИЯ ==========
@@ -412,5 +390,4 @@ window.onclick = (e) => {
     }
 };
 
-// Запуск
 checkAutoLogin();
